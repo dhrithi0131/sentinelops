@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+kubernetes
+httpx
+pydantic
+pydantic-settings
+prometheus-api-client
+pytest
+pytest-asyncio
