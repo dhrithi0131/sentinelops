@@ -19,34 +19,104 @@ class KubernetesCollector(BaseCollector):
         evidence.extend(self.collect_events())
         evidence.extend(self.collect_deployments())
         evidence.extend(self.collect_services())
+        evidence.extend(self.collect_nodes())
 
         return evidence
 
-    def collect_pods(self, namespace: str = "default") -> list[Evidence]:
-        pods = self.core_api.list_namespaced_pod(namespace)
+    def collect_pods(self) -> list[Evidence]:
+        pods = self.core_api.list_pod_for_all_namespaces()
 
         evidence = []
 
         for pod in pods.items:
+            containers = []
+
+            for container_status in pod.status.container_statuses or []:
+                state = container_status.state
+                last_state = container_status.last_state
+
+                containers.append(
+                    {
+                        "name": container_status.name,
+                        "ready": container_status.ready,
+                        "restart_count": container_status.restart_count,
+                        "state": {
+                            "waiting": (
+                                {
+                                    "reason": state.waiting.reason,
+                                    "message": state.waiting.message,
+                                }
+                                if state.waiting
+                                else None
+                            ),
+                            "running": (
+                                {
+                                    "started_at": state.running.started_at,
+                                }
+                                if state.running
+                                else None
+                            ),
+                            "terminated": (
+                                {
+                                    "reason": state.terminated.reason,
+                                    "message": state.terminated.message,
+                                    "exit_code": state.terminated.exit_code,
+                                    "started_at": state.terminated.started_at,
+                                    "finished_at": state.terminated.finished_at,
+                                }
+                                if state.terminated
+                                else None
+                            ),
+                        },
+                        "last_state": {
+                            "terminated": (
+                                {
+                                    "reason": last_state.terminated.reason,
+                                    "message": last_state.terminated.message,
+                                    "exit_code": last_state.terminated.exit_code,
+                                    "started_at": last_state.terminated.started_at,
+                                    "finished_at": last_state.terminated.finished_at,
+                                }
+                                if last_state.terminated
+                                else None
+                            ),
+                        },
+                    }
+                )
+
+            conditions = {}
+
+            for condition in pod.status.conditions or []:
+                conditions[condition.type] = {
+                    "status": condition.status,
+                    "reason": condition.reason,
+                    "message": condition.message,
+                    "last_transition_time": condition.last_transition_time,
+                }
+
             evidence.append(
                 Evidence(
                     source="kubernetes",
                     evidence_type="pod",
                     timestamp=datetime.now(timezone.utc),
-                    namespace=namespace,
+                    namespace=pod.metadata.namespace,
                     resource=pod.metadata.name,
                     data={
                         "phase": pod.status.phase,
                         "pod_ip": pod.status.pod_ip,
                         "node_name": pod.spec.node_name,
+                        "host_ip": pod.status.host_ip,
+                        "start_time": pod.status.start_time,
+                        "containers": containers,
+                        "conditions": conditions,
                     },
                 )
             )
 
         return evidence
 
-    def collect_events(self, namespace: str = "default") -> list[Evidence]:
-        events = self.core_api.list_namespaced_event(namespace)
+    def collect_events(self) -> list[Evidence]:
+        events = self.core_api.list_event_for_all_namespaces()
 
         evidence = []
 
@@ -71,7 +141,7 @@ class KubernetesCollector(BaseCollector):
                     source="kubernetes",
                     evidence_type="event",
                     timestamp=event_time,
-                    namespace=namespace,
+                    namespace=event.metadata.namespace,
                     resource=resource_name,
                     data={
                         "reason": event.reason,
@@ -89,8 +159,8 @@ class KubernetesCollector(BaseCollector):
 
         return evidence
 
-    def collect_deployments(self, namespace: str = "default") -> list[Evidence]:
-        deployments = self.apps_api.list_namespaced_deployment(namespace)
+    def collect_deployments(self) -> list[Evidence]:
+        deployments = self.apps_api.list_deployment_for_all_namespaces()
 
         evidence = []
 
@@ -103,7 +173,7 @@ class KubernetesCollector(BaseCollector):
                     source="kubernetes",
                     evidence_type="deployment",
                     timestamp=datetime.now(timezone.utc),
-                    namespace=namespace,
+                    namespace=deployment.metadata.namespace,
                     resource=deployment.metadata.name,
                     data={
                         "desired_replicas": spec.replicas,
@@ -116,8 +186,8 @@ class KubernetesCollector(BaseCollector):
 
         return evidence
 
-    def collect_services(self, namespace: str = "default") -> list[Evidence]:
-        services = self.core_api.list_namespaced_service(namespace)
+    def collect_services(self) -> list[Evidence]:
+        services = self.core_api.list_service_for_all_namespaces()
 
         evidence = []
 
@@ -139,13 +209,49 @@ class KubernetesCollector(BaseCollector):
                     source="kubernetes",
                     evidence_type="service",
                     timestamp=datetime.now(timezone.utc),
-                    namespace=namespace,
+                    namespace=service.metadata.namespace,
                     resource=service.metadata.name,
                     data={
                         "type": service.spec.type,
                         "cluster_ip": service.spec.cluster_ip,
                         "selector": service.spec.selector or {},
                         "ports": ports,
+                    },
+                )
+            )
+
+        return evidence
+
+    def collect_nodes(self) -> list[Evidence]:
+        nodes = self.core_api.list_node()
+
+        evidence = []
+
+        for node in nodes.items:
+            conditions = {}
+
+            for condition in node.status.conditions or []:
+                conditions[condition.type] = condition.status
+
+            evidence.append(
+                Evidence(
+                    source="kubernetes",
+                    evidence_type="node",
+                    timestamp=datetime.now(timezone.utc),
+                    namespace=None,
+                    resource=node.metadata.name,
+                    data={
+                        "ready": conditions.get("Ready"),
+                        "memory_pressure": conditions.get("MemoryPressure"),
+                        "disk_pressure": conditions.get("DiskPressure"),
+                        "pid_pressure": conditions.get("PIDPressure"),
+                        "unschedulable": node.spec.unschedulable or False,
+                        "capacity_cpu": node.status.capacity.get("cpu"),
+                        "capacity_memory": node.status.capacity.get("memory"),
+                        "allocatable_cpu": node.status.allocatable.get("cpu"),
+                        "allocatable_memory": node.status.allocatable.get(
+                            "memory"
+                        ),
                     },
                 )
             )
