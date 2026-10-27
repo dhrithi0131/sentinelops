@@ -73,3 +73,42 @@ class ConfigurableEmbeddingProvider(EmbeddingProvider):
             [float(value) for value in result]
             for result in self._embed_function(list(texts))
         ]
+
+class HuggingFaceEmbeddingProvider(EmbeddingProvider):
+    """Generate semantic embeddings using a Sentence Transformers model."""
+
+    def __init__(
+        self,
+        model_name: str = "BAAI/bge-small-en-v1.5",
+        device: str | None = None,
+    ) -> None:
+        from sentence_transformers import SentenceTransformer
+
+        kwargs = {"device": device} if device else {}
+        self.model = SentenceTransformer(model_name, **kwargs)
+        self.dimensions = self.model.get_sentence_embedding_dimension()
+
+        if self.dimensions is None:
+            raise RuntimeError("Could not determine embedding dimensions")
+
+    def embed(self, text: str) -> list[float]:
+        if not isinstance(text, str):
+            raise TypeError("text must be a string")
+
+        vectors = self.model.encode(
+            [text],
+            normalize_embeddings=True,
+            convert_to_numpy=True,
+        )
+        return vectors[0].astype(float).tolist()
+
+    def embed_batch(self, texts: Sequence[str]) -> list[list[float]]:
+        if not texts:
+            return []
+
+        vectors = self.model.encode(
+            list(texts),
+            normalize_embeddings=True,
+            convert_to_numpy=True,
+        )
+        return vectors.astype(float).tolist()

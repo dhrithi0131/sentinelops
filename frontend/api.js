@@ -45,6 +45,11 @@ async function apiRequest(
 }
 
 
+async function getIncidents() {
+    return apiRequest("/incidents");
+}
+
+
 async function getIncident(
     incidentId
 ) {
@@ -133,6 +138,9 @@ async function executeRemediation(
 /*
  * Expose API functions to the frontend application.
  */
+window.getIncidents =
+    getIncidents;
+
 window.getIncident =
     getIncident;
 
@@ -153,3 +161,9 @@ window.dryRunRemediation =
 
 window.executeRemediation =
     executeRemediation;
+
+window.getSimilarIncidents = async function (id, topK = 5) {
+    return apiRequest(
+        `/incidents/${encodeURIComponent(id)}/similar?top_k=${topK}`
+    );
+}; 

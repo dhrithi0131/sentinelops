@@ -1,3 +1,5 @@
+import importlib
+
 from fastapi.testclient import TestClient
 
 from backend.api.app import app
@@ -88,3 +90,88 @@ def test_internal_errors_do_not_expose_traceback() -> None:
     assert "traceback" not in body
     assert "secret internal failure" not in body
     assert body["request_id"]
+
+
+def test_diagnosis_without_saved_record_returns_empty_result() -> None:
+    response = client.get("/incidents/inc-1/diagnosis")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "incident_id": "inc-1",
+        "diagnosis": None,
+        "confidence": None,
+    }
+
+def test_diagnosis_uses_rag_for_incident_without_saved_diagnosis(
+    monkeypatch,
+) -> None:
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+
+    import importlib
+
+    api = importlib.import_module("backend.api.app")
+    from models.incident import Incident, IncidentDNA, Timeline
+
+    timestamp = datetime.now(timezone.utc)
+    incident = Incident(
+        id="INC-RAG-TEST",
+        started_at=timestamp,
+        ended_at=None,
+        severity="high",
+        status="open",
+        dna=IncidentDNA(
+            trigger="memory pressure",
+            failure="OOMKilled",
+            restart_pattern="repeated restarts",
+            readiness="readiness probe failing",
+            affected_workload="test-api",
+            duration=5,
+        ),
+        timeline=Timeline(
+            entries=[
+                {
+                    "timestamp": timestamp.isoformat(),
+                    "event": "Memory pressure caused an OOMKilled event.",
+                }
+            ]
+        ),
+        metadata={"title": "Memory OOMKilled", "service": "test-api"},
+    )
+
+    class FakeStore:
+        def get(self, incident_id):
+            return incident if incident_id == "INC-RAG-TEST" else None
+
+    historical = SimpleNamespace(incident_id="INC-HISTORICAL")
+    fake_rag_result = SimpleNamespace(retrieved_incidents=[historical])
+    calls = {}
+
+    class FakePipeline:
+        def run(self, query_incident, top_k=5):
+            calls["query_incident"] = query_incident
+            calls["top_k"] = top_k
+            return fake_rag_result
+
+    class FakeDiagnosisEngine:
+        def diagnose(self, candidate, classification, rag_result=None):
+            calls["candidate"] = candidate
+            calls["classification"] = classification
+            calls["rag_result"] = rag_result
+            return SimpleNamespace(
+                summary="Resource incident detected: Memory OOMKilled.",
+                confidence=0.95,
+            )
+
+    monkeypatch.setattr(api, "get_incident_store", lambda: FakeStore())
+    monkeypatch.setattr(api, "get_rag_pipeline", lambda: FakePipeline())
+    monkeypatch.setattr(api, "DiagnosisEngine", FakeDiagnosisEngine)
+
+    response = client.get("/incidents/INC-RAG-TEST/diagnosis")
+
+    assert response.status_code == 200
+    assert calls["rag_result"] is fake_rag_result
+    assert calls["query_incident"] is incident
+    assert calls["top_k"] == 5
+    assert calls["candidate"].evidence.source == "stored_timeline"
+    assert response.json()["incident_id"] == "INC-RAG-TEST"
