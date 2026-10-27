@@ -1,26 +1,5 @@
-from fastapi import FastAPI
+"""SentinelOps application entrypoint."""
 
-from backend.config import settings
+from backend.api.app import app
 
-
-app = FastAPI(
-    title=settings.app_name,
-    description="AI-powered Kubernetes incident intelligence platform",
-    version="0.1.0",
-)
-
-
-@app.get("/")
-async def root():
-    return {
-        "service": settings.app_name,
-        "status": "running",
-        "environment": settings.environment,
-    }
-
-
-@app.get("/health")
-async def health():
-    return {
-        "status": "healthy",
-    }
+__all__ = ["app"]

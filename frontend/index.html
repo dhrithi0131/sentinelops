@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#DDD0C8">
+    <title>SentinelOps — Operations Center</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-shell" id="appShell">
+
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="brand-mark">S</div>
+                <div class="brand-text">
+                    <strong>Sentinel<span>Ops</span></strong>
+                    <small>Autonomous Reliability</small>
+                </div>
+                <button
+                    class="icon-button mobile-close"
+                    id="closeSidebar"
+                    aria-label="Close navigation"
+                >×</button>
+            </div>
+
+            <div class="workspace-label">WORKSPACE</div>
+
+            <nav class="navigation" id="navigation" aria-label="Main navigation">
+                <button class="nav-item active" data-page="overview">
+                    <span class="nav-icon">◫</span> Overview
+                </button>
+                <button class="nav-item" data-page="incidents">
+                    <span class="nav-icon">◈</span> Incidents
+                    <span class="nav-count" id="incidentNavCount">3</span>
+                </button>
+                <button class="nav-item" data-page="timeline">
+                    <span class="nav-icon">◷</span> Timeline
+                </button>
+                <button class="nav-item" data-page="remediation">
+                    <span class="nav-icon">⌁</span> Remediation
+                </button>
+                <button class="nav-item" data-page="metrics">
+                    <span class="nav-icon">▥</span> Metrics
+                </button>
+                <button class="nav-item" data-page="logs">
+                    <span class="nav-icon">≡</span> Logs
+                </button>
+                <button class="nav-item" data-page="traces">
+                    <span class="nav-icon">⑂</span> Traces
+                </button>
+                <button class="nav-item" data-page="kubernetes">
+                    <span class="nav-icon">◉</span> Kubernetes
+                </button>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    <div>
+                        <strong>All systems operational</strong>
+                        <small>Last checked just now</small>
+                    </div>
+                </div>
+
+                <div class="profile">
+                    <div class="avatar">SO</div>
+                    <div>
+                        <strong>SentinelOps Admin</strong>
+                        <small>Operations team</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <button
+            class="sidebar-scrim"
+            id="sidebarScrim"
+            aria-label="Close navigation"
+        ></button>
+
+        <main class="main-area">
+            <header class="topbar">
+                <button
+                    class="icon-button mobile-menu"
+                    id="openSidebar"
+                    aria-label="Open navigation"
+                >☰</button>
+
+                <div class="breadcrumbs">
+                    <span>SentinelOps</span>
+                    <span class="crumb-divider">/</span>
+                    <strong id="breadcrumbTitle">Overview</strong>
+                </div>
+
+                <div class="topbar-actions">
+                    <span class="live-pill">
+                        <span class="status-dot"></span>
+                        LIVE MONITORING
+                    </span>
+
+                    <button class="layout-toggle" id="layoutToggle" type="button">
+                        <span>↔</span>
+                        <span id="layoutToggleText">Move nav to top</span>
+                    </button>
+
+                    <button
+                        class="icon-button"
+                        id="refreshButton"
+                        title="Refresh data"
+                        aria-label="Refresh data"
+                    >↻</button>
+                </div>
+            </header>
+
+            <div class="content-wrap">
+
+                <!-- OVERVIEW -->
+                <section
+                    class="page active"
+                    id="page-overview"
+                    data-page-section="overview"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">OPERATIONS CENTER</p>
+                            <h1>Overview</h1>
+                            <p class="subtitle">
+                                A clear view of your infrastructure health and active incidents.
+                            </p>
+                        </div>
+                        <div class="heading-meta">
+                            <span class="date-chip" id="currentDate">Today</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-grid">
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span>Active incidents</span>
+                                <span class="stat-symbol">◈</span>
+                            </div>
+                            <strong class="stat-value" id="activeIncidentStat">3</strong>
+                            <div class="stat-foot">
+                                <span class="status-text danger">● Needs attention</span>
+                                <span>Current</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span>Critical incidents</span>
+                                <span class="stat-symbol">!</span>
+                            </div>
+                            <strong class="stat-value" id="criticalStat">1</strong>
+                            <div class="stat-foot">
+                                <span class="status-text danger">Priority response</span>
+                                <span>Current</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span>Services monitored</span>
+                                <span class="stat-symbol">⌘</span>
+                            </div>
+                            <strong class="stat-value">24</strong>
+                            <div class="stat-foot">
+                                <span class="status-text good">● Healthy coverage</span>
+                                <span>Production</span>
+                            </div>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span>Mean response time</span>
+                                <span class="stat-symbol">◷</span>
+                            </div>
+                            <strong class="stat-value">4.8<span class="stat-unit"> min</span></strong>
+                            <div class="stat-foot">
+                                <span class="status-text good">↓ Improving</span>
+                                <span>Last 24 hours</span>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="section-grid overview-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Incident activity</h2>
+                                    <p>Recent alerts across your services</p>
+                                </div>
+                                <button class="text-button" data-go="incidents">
+                                    View all incidents →
+                                </button>
+                            </div>
+                            <div class="incident-list" id="overviewIncidentList"></div>
+                        </article>
+
+                        <article class="panel health-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>System health</h2>
+                                    <p>Production environment</p>
+                                </div>
+                                <span class="healthy-badge">Healthy</span>
+                            </div>
+
+                            <div class="health-score">
+                                <div class="health-ring">
+                                    <strong>98<span>%</span></strong>
+                                </div>
+                                <div>
+                                    <strong>Infrastructure stable</strong>
+                                    <p>
+                                        Most monitored services are operating within expected thresholds.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="health-metrics">
+                                <div><span>API availability</span><strong>99.98%</strong></div>
+                                <div><span>CPU utilization</span><strong>42%</strong></div>
+                                <div><span>Memory utilization</span><strong>61%</strong></div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Recent activity</h2>
+                                <p>Latest events from your observability stack</p>
+                            </div>
+                            <button class="text-button" data-go="timeline">
+                                Open timeline →
+                            </button>
+                        </div>
+                        <div class="activity-list" id="overviewActivityList"></div>
+                    </article>
+                </section>
+
+                <!-- INCIDENTS -->
+                <section
+                    class="page"
+                    id="page-incidents"
+                    data-page-section="incidents"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">EVENT MANAGEMENT</p>
+                            <h1>Incidents</h1>
+                            <p class="subtitle">
+                                Investigate, prioritize, and track service disruptions.
+                            </p>
+                        </div>
+                        <button class="primary-button" id="reloadIncidents">
+                            ↻ Refresh incidents
+                        </button>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <span>⌕</span>
+                            <input
+                                id="incidentSearch"
+                                type="search"
+                                placeholder="Search incidents, services, namespaces…"
+                            >
+                        </div>
+
+                        <select id="severityFilter" aria-label="Filter severity">
+                            <option value="all">All severities</option>
+                            <option value="CRITICAL">Critical</option>
+                            <option value="WARNING">Warning</option>
+                            <option value="MINOR">Minor</option>
+                        </select>
+                    </div>
+
+                    <div class="incident-layout">
+                        <article class="panel incident-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Incident queue</h2>
+                                    <p id="incidentQueueSubtitle">Active alerts</p>
+                                </div>
+                                <span class="count-chip" id="incidentQueueCount">
+                                    3 incidents
+                                </span>
+                            </div>
+                            <div class="incident-list full-list" id="incidentList"></div>
+                        </article>
+
+                        <article class="panel detail-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Incident details</h2>
+                                    <p>Selected incident context</p>
+                                </div>
+                            </div>
+                            <div id="incidentDetails" class="empty-state">
+                                Select an incident to view its details.
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <!-- TIMELINE -->
+                <section
+                    class="page"
+                    id="page-timeline"
+                    data-page-section="timeline"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">EVENT CORRELATION</p>
+                            <h1>Timeline</h1>
+                            <p class="subtitle">
+                                Follow the sequence of signals and changes around an incident.
+                            </p>
+                        </div>
+                        <select id="timelineIncidentSelect" aria-label="Choose incident"></select>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Incident event stream</h2>
+                                <p>Chronological signals from observability sources</p>
+                            </div>
+                            <span class="count-chip" id="timelineCount">Events</span>
+                        </div>
+                        <div class="timeline" id="timelineContent"></div>
+                    </article>
+                </section>
+
+                <!-- REMEDIATION -->
+                <section
+                    class="page"
+                    id="page-remediation"
+                    data-page-section="remediation"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">RESPONSE AUTOMATION</p>
+                            <h1>Remediation</h1>
+                            <p class="subtitle">
+                                Review recommended actions and run a safe dry-run before execution.
+                            </p>
+                        </div>
+                        <span class="safety-chip">◉ Safety-first workflow</span>
+                    </div>
+
+                    <div class="notice">
+                        <strong>Before you execute</strong>
+                        <span>
+                            Review the incident, inspect the proposed action, and run a dry-run.
+                            Execution is sent to your configured API.
+                        </span>
+                    </div>
+
+                    <div class="section-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Recommended actions</h2>
+                                    <p id="recommendationSubtitle">
+                                        Suggestions for selected incident
+                                    </p>
+                                </div>
+                            </div>
+                            <div id="recommendationsContent" class="recommendations"></div>
+                        </article>
+
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Remediation console</h2>
+                                    <p>Dry-run and execution controls</p>
+                                </div>
+                                <span class="safety-chip">Controlled</span>
+                            </div>
+
+                            <form id="remediationForm">
+                                <label for="remediationAction">Action</label>
+                                <select id="remediationAction" required>
+                                    <option value="restart_pod">Restart pod</option>
+                                    <option value="scale_deployment">Scale deployment</option>
+                                    <option value="rollback_deployment">Rollback deployment</option>
+                                    <option value="clear_cache">Clear cache</option>
+                                </select>
+
+                                <label for="remediationTarget">Target resource</label>
+                                <input
+                                    id="remediationTarget"
+                                    placeholder="e.g. api-gateway"
+                                    required
+                                >
+
+                                <label for="remediationReason">Reason / context</label>
+                                <textarea
+                                    id="remediationReason"
+                                    rows="3"
+                                    placeholder="Describe why this action is needed"
+                                ></textarea>
+
+                                <div class="button-row">
+                                    <button
+                                        class="secondary-button"
+                                        id="dryRunButton"
+                                        type="button"
+                                    >
+                                        Run dry-run
+                                    </button>
+                                    <button class="primary-button" id="executeButton" type="submit">
+                                        Execute remediation
+                                    </button>
+                                </div>
+                            </form>
+
+                            <div id="remediationResult" class="result-box" aria-live="polite">
+                                Dry-run and execution results will appear here.
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <!-- METRICS -->
+                <section
+                    class="page"
+                    id="page-metrics"
+                    data-page-section="metrics"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">OBSERVABILITY</p>
+                            <h1>Metrics</h1>
+                            <p class="subtitle">
+                                Review key health indicators and service-level signals.
+                            </p>
+                        </div>
+                        <span class="date-chip">Last 60 minutes</span>
+                    </div>
+
+                    <div class="stat-grid">
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Request rate</span><span class="stat-symbol">↗</span></div>
+                            <strong class="stat-value">1.42k<span class="stat-unit">/s</span></strong>
+                            <div class="stat-foot"><span class="status-text good">Within baseline</span><span>API gateway</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Error rate</span><span class="stat-symbol">%</span></div>
+                            <strong class="stat-value">0.18<span class="stat-unit">%</span></strong>
+                            <div class="stat-foot"><span class="status-text good">Below threshold</span><span>5xx responses</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>p95 latency</span><span class="stat-symbol">◷</span></div>
+                            <strong class="stat-value">184<span class="stat-unit"> ms</span></strong>
+                            <div class="stat-foot"><span class="status-text warning">Watch trend</span><span>API gateway</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Node CPU</span><span class="stat-symbol">▥</span></div>
+                            <strong class="stat-value">42<span class="stat-unit">%</span></strong>
+                            <div class="stat-foot"><span class="status-text good">Normal</span><span>Cluster average</span></div>
+                        </article>
+                    </div>
+
+                    <div class="section-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Request throughput</h2>
+                                    <p>Illustrative recent request volume</p>
+                                </div>
+                            </div>
+                            <div class="chart" aria-label="Request throughput chart">
+                                <div class="chart-y">
+                                    <span>2k</span><span>1.5k</span><span>1k</span><span>500</span><span>0</span>
+                                </div>
+                                <div class="chart-bars" id="throughputChart"></div>
+                            </div>
+                            <div class="chart-legend">
+                                <span><i></i>Requests per second</span>
+                            </div>
+                        </article>
+
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h2>Service indicators</h2>
+                                    <p>Current sample values</p>
+                                </div>
+                            </div>
+                            <div class="health-metrics">
+                                <div><span>Availability</span><strong>99.98%</strong></div>
+                                <div><span>Request success</span><strong>99.82%</strong></div>
+                                <div><span>Memory usage</span><strong>61%</strong></div>
+                                <div><span>Open alerts</span><strong id="metricsAlertCount">3</strong></div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <!-- LOGS -->
+                <section
+                    class="page"
+                    id="page-logs"
+                    data-page-section="logs"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">LOG EXPLORER</p>
+                            <h1>Logs</h1>
+                            <p class="subtitle">
+                                Search sample log events and narrow them by level or source.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="search-box">
+                            <span>⌕</span>
+                            <input
+                                id="logSearch"
+                                type="search"
+                                placeholder="Search messages or services…"
+                            >
+                        </div>
+
+                        <select id="logLevelFilter" aria-label="Filter log level">
+                            <option value="all">All levels</option>
+                            <option value="ERROR">Error</option>
+                            <option value="WARN">Warning</option>
+                            <option value="INFO">Info</option>
+                        </select>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Log stream</h2>
+                                <p>
+                                    Sample records for interface preview; connect your log backend for live data.
+                                </p>
+                            </div>
+                            <span class="count-chip" id="logCount">6 records</span>
+                        </div>
+
+                        <div class="log-table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Level</th>
+                                        <th>Service</th>
+                                        <th>Message</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTable"></tbody>
+                            </table>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- TRACES -->
+                <section
+                    class="page"
+                    id="page-traces"
+                    data-page-section="traces"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">DISTRIBUTED TRACING</p>
+                            <h1>Traces</h1>
+                            <p class="subtitle">
+                                Inspect request paths and locate latency across service boundaries.
+                            </p>
+                        </div>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Recent traces</h2>
+                                <p>
+                                    Illustrative trace records — connect your tracing backend for live spans.
+                                </p>
+                            </div>
+                            <span class="count-chip">3 traces</span>
+                        </div>
+
+                        <div class="trace-list">
+                            <div class="trace-row">
+                                <div class="trace-id">TR-8F21A</div>
+                                <div class="trace-main">
+                                    <strong>POST /api/checkout</strong>
+                                    <div class="trace-bars">
+                                        <i style="width:28%"></i>
+                                        <i style="width:48%"></i>
+                                        <i style="width:18%"></i>
+                                    </div>
+                                    <small>api-gateway → checkout → payments</small>
+                                </div>
+                                <span class="trace-duration slow">1.82 s</span>
+                            </div>
+
+                            <div class="trace-row">
+                                <div class="trace-id">TR-8F219</div>
+                                <div class="trace-main">
+                                    <strong>GET /api/catalog</strong>
+                                    <div class="trace-bars">
+                                        <i style="width:24%"></i>
+                                        <i style="width:25%"></i>
+                                        <i style="width:16%"></i>
+                                    </div>
+                                    <small>api-gateway → catalog → cache</small>
+                                </div>
+                                <span class="trace-duration">214 ms</span>
+                            </div>
+
+                            <div class="trace-row">
+                                <div class="trace-id">TR-8F217</div>
+                                <div class="trace-main">
+                                    <strong>GET /api/profile</strong>
+                                    <div class="trace-bars">
+                                        <i style="width:18%"></i>
+                                        <i style="width:19%"></i>
+                                        <i style="width:12%"></i>
+                                    </div>
+                                    <small>api-gateway → identity → users</small>
+                                </div>
+                                <span class="trace-duration">186 ms</span>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <!-- KUBERNETES -->
+                <section
+                    class="page"
+                    id="page-kubernetes"
+                    data-page-section="kubernetes"
+                >
+                    <div class="page-heading">
+                        <div>
+                            <p class="eyebrow">CLUSTER MANAGEMENT</p>
+                            <h1>Kubernetes</h1>
+                            <p class="subtitle">
+                                Review cluster workload status and resource utilization.
+                            </p>
+                        </div>
+                        <span class="healthy-badge">Cluster connected</span>
+                    </div>
+
+                    <div class="stat-grid">
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Nodes</span><span class="stat-symbol">◉</span></div>
+                            <strong class="stat-value">8<span class="stat-unit"> / 8</span></strong>
+                            <div class="stat-foot"><span class="status-text good">All ready</span><span>Cluster</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Running pods</span><span class="stat-symbol">▦</span></div>
+                            <strong class="stat-value">126</strong>
+                            <div class="stat-foot"><span class="status-text good">Stable</span><span>All namespaces</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Restarts (1h)</span><span class="stat-symbol">↻</span></div>
+                            <strong class="stat-value">4</strong>
+                            <div class="stat-foot"><span class="status-text warning">Review workload</span><span>Last hour</span></div>
+                        </article>
+                        <article class="stat-card">
+                            <div class="stat-top"><span>Deployments</span><span class="stat-symbol">⌘</span></div>
+                            <strong class="stat-value">18</strong>
+                            <div class="stat-foot"><span class="status-text good">Available</span><span>Production</span></div>
+                        </article>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h2>Workloads</h2>
+                                <p>
+                                    Sample Kubernetes workload inventory — connect your cluster API for live state.
+                                </p>
+                            </div>
+                            <span class="count-chip">Production</span>
+                        </div>
+
+                        <div class="log-table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Workload</th>
+                                        <th>Namespace</th>
+                                        <th>Ready</th>
+                                        <th>CPU</th>
+                                        <th>Memory</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>api-gateway</td><td>production</td><td>3 / 3</td>
+                                        <td>38%</td><td>54%</td><td><span class="healthy-badge">Healthy</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>worker-pool</td><td>production</td><td>5 / 5</td>
+                                        <td>64%</td><td>82%</td><td><span class="warning-badge">Memory watch</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>payments</td><td>production</td><td>4 / 4</td>
+                                        <td>31%</td><td>49%</td><td><span class="healthy-badge">Healthy</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>catalog</td><td>production</td><td>2 / 2</td>
+                                        <td>27%</td><td>44%</td><td><span class="healthy-badge">Healthy</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </section>
+
+                <footer class="footer">
+                    <span>SentinelOps <span id="footerYear"></span></span>
+                    <span>Reliability through visibility.</span>
+                </footer>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+          window.SENTINELOPS_API_BASE_URL = "http://127.0.0.1:8000";
+          </script>
+    <script src="api.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import sqlite3
 from datetime import datetime
@@ -160,19 +162,26 @@ class SQLiteEvidenceStore(EvidenceStore):
         if isinstance(metadata, dict):
             return metadata.get(field)
 
+        data = getattr(evidence, "data", None)
+
+        if isinstance(data, dict):
+            return data.get(field)
+
         return None
 
     @staticmethod
     def _to_data(evidence: Evidence) -> dict[str, Any]:
-        metadata = getattr(evidence, "metadata", None)
-
-        if isinstance(metadata, dict):
-            return metadata
-
+        # Evidence.data is the canonical payload.
         data = getattr(evidence, "data", None)
 
         if isinstance(data, dict):
             return data
+
+        # Retain compatibility with legacy objects exposing metadata.
+        metadata = getattr(evidence, "metadata", None)
+
+        if isinstance(metadata, dict):
+            return metadata
 
         return {}
 
@@ -184,5 +193,7 @@ class SQLiteEvidenceStore(EvidenceStore):
             source=row["source"],
             evidence_type=row["evidence_type"],
             timestamp=datetime.fromisoformat(row["timestamp"]),
-            metadata=data,
+            namespace=row["namespace"],
+            resource=row["resource"],
+            data=data,
         )
